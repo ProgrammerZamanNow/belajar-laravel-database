@@ -276,7 +276,7 @@ class QueryBuilderTest extends TestCase
             ->chunk(10, function ($categories) {
                 self::assertNotNull($categories);
                 Log::info("Start Chunk");
-                $categories->each(function ($category){
+                $categories->each(function ($category) {
                     Log::info(json_encode($category));
                 });
                 Log::info("End Chunk");
@@ -291,7 +291,7 @@ class QueryBuilderTest extends TestCase
         $collection = DB::table("categories")->orderBy("id")->lazy(10)->take(3);
         self::assertNotNull($collection);
 
-        $collection->each(function ($item){
+        $collection->each(function ($item) {
             Log::info(json_encode($item));
         });
 
@@ -304,7 +304,7 @@ class QueryBuilderTest extends TestCase
         $collection = DB::table("categories")->orderBy("id")->cursor();
         self::assertNotNull($collection);
 
-        $collection->each(function ($item){
+        $collection->each(function ($item) {
             Log::info(json_encode($item));
         });
 
@@ -348,6 +348,53 @@ class QueryBuilderTest extends TestCase
 
     }
 
+    public function insertProductFood(){
+        DB::table("products")->insert([
+            "id" => "3",
+            "name" => "Bakso",
+            "category_id" => "FOOD",
+            "price" => 20000
+        ]);
+        DB::table("products")->insert([
+            "id" => "4",
+            "name" => "Mie Ayam",
+            "category_id" => "FOOD",
+            "price" => 20000
+        ]);
+    }
+
+    public function testGroupBy()
+    {
+        $this->insertProducts();
+        $this->insertProductFood();
+
+        $collection = DB::table("products")
+            ->select("category_id", DB::raw("count(*) as total_product"))
+            ->groupBy("category_id")
+            ->orderBy("category_id", "desc")
+            ->get();
+
+        self::assertCount(2, $collection);
+        self::assertEquals("SMARTPHONE", $collection[0]->category_id);
+        self::assertEquals("FOOD", $collection[1]->category_id);
+        self::assertEquals(2, $collection[0]->total_product);
+        self::assertEquals(2, $collection[1]->total_product);
+    }
+
+    public function testGroupByHaving()
+    {
+        $this->insertProducts();
+        $this->insertProductFood();
+
+        $collection = DB::table("products")
+            ->select("category_id", DB::raw("count(*) as total_product"))
+            ->groupBy("category_id")
+            ->having(DB::raw("count(*)"), ">", 2)
+            ->orderBy("category_id", "desc")
+            ->get();
+
+        self::assertCount(0, $collection);
+    }
 
 }
 
