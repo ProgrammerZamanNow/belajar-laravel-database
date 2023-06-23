@@ -46,3 +46,5 @@ drop table counters;
 show tables;
 
 select * from migrations;
+
+select * from categories;
