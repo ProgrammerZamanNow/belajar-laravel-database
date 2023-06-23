@@ -284,6 +284,19 @@ class QueryBuilderTest extends TestCase
 
     }
 
+    public function testLazy()
+    {
+        $this->insertManyCategories();
+
+        $collection = DB::table("categories")->orderBy("id")->lazy(10)->take(3);
+        self::assertNotNull($collection);
+
+        $collection->each(function ($item){
+            Log::info(json_encode($item));
+        });
+
+    }
+
 
 }
 
