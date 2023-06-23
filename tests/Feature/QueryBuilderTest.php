@@ -241,6 +241,21 @@ class QueryBuilderTest extends TestCase
 
     }
 
+    public function testPaging()
+    {
+        $this->insertCategories();
+
+        $collection = DB::table("categories")
+            ->skip(0)
+            ->take(2)
+            ->get();
+
+        self::assertCount(2, $collection);
+        $collection->each(function ($item) {
+            Log::info(json_encode($item));
+        });
+    }
+
 
 }
 
